@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Multi-Agent AI System for Disaster Response</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Open+Sans:wght@400;600;700&display=swap">
+<style>
+:root{--bg:#171a17;--panel:#212621;--line:#343b34;--text:#e8e9e4;--muted:#9a9f94;--amber:#8fb996;--ink:#142218;--ok:#8fb996;--bad:#bf6650;--warn:#d6b97b;--blue:#8fb996;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f6f5f0;--panel:#fff;--line:#dcdbd0;--text:#222622;--muted:#636a62;--amber:#4f7f5b;--ink:#fff;--ok:#4f7f5b;--bad:#b0563f;--warn:#b08a3a;--blue:#4f7f5b;color-scheme:light}}
+:root[data-theme="dark"]{--bg:#171a17;--panel:#212621;--line:#343b34;--text:#e8e9e4;--muted:#9a9f94;--amber:#8fb996;--ink:#142218}
+*{box-sizing:border-box}[hidden]{display:none!important}.when{display:block;color:var(--amber);font-size:12px;font-weight:700}.adv{margin:0;padding-left:18px;font-size:13px}.adv li{margin:4px 0}h3.sub{margin:16px 0 8px}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Open Sans",system-ui,sans-serif;line-height:1.5}
+h1,h2,h3{font-family:"Open Sans",system-ui,sans-serif;font-weight:700;margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 16px 60px}
+header{padding:28px 0 18px;border-bottom:1px solid var(--line);margin-bottom:22px}
+h1{font-size:clamp(28px,5vw,52px);line-height:1.05}
+header p{color:var(--muted);max-width:62ch;margin:10px 0 0}
+.grid{display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);gap:20px;align-items:start}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px}
+.card+.card{margin-top:16px}
+h2{font-size:20px;margin-bottom:12px}
+h3{font-size:15px}
+label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+input,select{width:100%;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:8px 10px;font:inherit;font-size:14px}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.presets{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px}
+button{font:inherit;font-weight:700;font-size:14px;cursor:pointer;border-radius:6px;padding:8px 14px;border:1px solid var(--line);background:var(--bg);color:var(--text)}
+button:hover{border-color:var(--amber)}
+button.on{background:var(--amber);color:var(--ink);border-color:var(--amber)}
+.run{width:100%;margin-top:16px;padding:13px;background:var(--amber);color:var(--ink);border-color:var(--amber);font-size:16px}
+.run:disabled{opacity:.55;cursor:wait}
+.zone{border:1px solid var(--line);border-radius:8px;padding:10px;margin-top:10px}
+.zone .two{margin-top:6px}
+.zone input[type=text]{font-weight:700}
+.rm{background:none;border:none;color:var(--muted);padding:2px 6px;font-size:12px}
+.pipe{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:4px}
+.node{border:1px solid var(--line);border-radius:6px;padding:6px 10px;font-size:13px;font-weight:600;color:var(--muted);background:var(--bg)}
+.node.run{color:var(--ink);background:var(--amber);border-color:var(--amber);width:auto;margin:0;padding:6px 10px;font-size:13px}
+.node.done{color:var(--ok);border-color:var(--ok)}
+.arrow{color:var(--muted)}
+.agents{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin-top:16px}
+.agent{border:1px solid var(--line);border-radius:8px;padding:12px;background:var(--bg);min-height:120px}
+.agent h3{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.st{font-family:"Open Sans",sans-serif;font-size:12px;font-weight:700;color:var(--muted)}
+.st.w{color:var(--amber)}.st.d{color:var(--ok)}
+.agent ul{margin:8px 0 0;padding-left:0;list-style:none;font-size:13px}
+.agent li{padding:6px 0;border-top:1px solid var(--line)}
+.tag{display:inline-block;font-size:12px;font-weight:700;border-radius:4px;padding:1px 7px;margin-right:6px;color:var(--ink)}
+.Critical{background:var(--bad);color:#fff}.High{background:var(--warn);color:#111}.Moderate{background:var(--ok);color:var(--ink)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:4px 0 14px}
+.stat{border:1px solid var(--line);border-radius:8px;padding:10px}
+.stat b{display:block;font-weight:700;font-size:22px}
+.stat span{font-size:12px;color:var(--muted)}
+ol.plan{margin:0;padding:0;list-style:none;counter-reset:s}
+ol.plan li{counter-increment:s;display:grid;grid-template-columns:34px 1fr;gap:10px;padding:10px 0;border-top:1px solid var(--line);font-size:14px}
+ol.plan li::before{content:counter(s);width:26px;height:26px;border-radius:50%;background:var(--amber);color:var(--ink);font-weight:700;display:grid;place-items:center;font-size:13px}
+.warn{border-left:4px solid var(--bad);padding:8px 12px;margin-top:10px;font-size:13px;background:var(--bg);border-radius:0 6px 6px 0}
+.empty{color:var(--muted);font-size:14px;margin:0}
+.note{font-size:12px;color:var(--muted);margin-top:14px}
+@media(prefers-reduced-motion:no-preference){.node{transition:all .25s}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<h1>Multi-Agent AI System for Disaster Response</h1>
+<p>Enter what you know about the disaster. Three specialist agents work at the same time, and a Coordinator merges their findings into one response plan.</p>
+</header>
+
+<div class="grid">
+<div>
+<section class="card">
+<h2>Disaster input</h2>
+<label for="dtype">Disaster type</label>
+<input id="dtype" type="text" list="dtypes" autocomplete="off" placeholder="Type any disaster, or pick a suggestion">
+<datalist id="dtypes"><option value="Flood"><option value="Earthquake"><option value="Cyclone"><option value="Tsunami"><option value="Landslide"><option value="Cloudburst"><option value="Wildfire"><option value="Heatwave"><option value="Building collapse"><option value="Industrial accident"></datalist>
+<label for="loc">Location</label>
+<input id="loc" type="text" placeholder="District, city or region">
+<h3 class="sub">Disaster details (optional)</h3>
+<div class="two">
+<div><label for="ex1" id="l1"></label><input id="ex1" type="number" min="0" step="any" placeholder="0"></div>
+<div><label for="ex2" id="l2"></label><select id="ex2"><option value="no">No</option><option value="yes">Yes</option></select></div>
+</div>
+<h3 class="sub">Resources available</h3>
+<div class="two">
+<div><label for="amb">Ambulances</label><input id="amb" type="number" min="0" placeholder="0"></div>
+<div><label for="rsc">Rescue teams</label><input id="rsc" type="number" min="0" placeholder="0"></div>
+<div data-for="water"><label for="boat">Boats</label><input id="boat" type="number" min="0" placeholder="0"></div>
+<div data-for="ground"><label for="heavy">Heavy machinery (cranes, JCBs)</label><input id="heavy" type="number" min="0" placeholder="0"></div>
+<div><label for="heli">Helicopters</label><input id="heli" type="number" min="0" placeholder="0"></div>
+<div><label for="bus">Buses / evacuation vehicles</label><input id="bus" type="number" min="0" placeholder="0"></div>
+<div><label for="kits">Medical kits</label><input id="kits" type="number" min="0" placeholder="0"></div>
+<div><label for="hosp">Free hospital beds nearby</label><input id="hosp" type="number" min="0" placeholder="0"></div>
+<div><label for="food">Food packs</label><input id="food" type="number" min="0" placeholder="0"></div>
+<div><label for="water">Water (litres)</label><input id="water" type="number" min="0" placeholder="0"></div>
+</div>
+</section>
+<section class="card">
+<h2>Shelters</h2>
+<div id="shelters"></div>
+<button type="button" id="addshelter" style="margin-top:12px">Add shelter</button>
+</section>
+<section class="card">
+<h2>Affected areas</h2>
+<div id="zones"></div>
+<button type="button" id="addzone" style="margin-top:12px">Add area</button>
+<button class="run" id="run" type="button">Generate response plan</button>
+</section>
+</div>
+
+<div>
+<section class="card">
+<h2>Agent pipeline</h2>
+<div class="pipe" id="pipe"></div>
+<div class="agents" id="agents"></div>
+</section>
+<section class="card" id="finalcard">
+<h2>Final response plan</h2>
+<div id="final"><p class="empty">Generate a plan to see the combined result here.</p></div>
+</section>
+<p class="note">Decision-support prototype using rule-based logic on the numbers you enter. It does not use live data, so real operations must be confirmed by trained responders.</p>
+</div>
+</div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt=n=>Math.round(n).toLocaleString("en-IN");
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function kind(t){t=(t||"").toLowerCase();return /flood|cyclone|tsunami|storm|hurricane|typhoon|cloudburst|surge|dam/.test(t)?"water":/earthquake|quake|landslide|collapse|volcan|avalanche/.test(t)?"ground":"other"}
+const ROADL={water:["Clear","Waterlogged (slow)","Submerged (impassable)"],ground:["Clear","Cracked or debris (slow)","Collapsed or blocked"],other:["Clear","Slow or congested","Blocked"]};
+const EXTRA={water:["Water level above normal (m)","Is the water still rising?"],ground:["Magnitude or intensity (e.g. 6.2)","Are aftershocks expected?"],other:["Hazard area (sq km)","Is the hazard still spreading?"]};
+let zones=[],shelters=[];
+function renderExtra(){
+ const k=kind($("dtype").value);
+ $("l1").textContent=EXTRA[k][0];$("l2").textContent=EXTRA[k][1];
+ document.querySelectorAll("[data-for]").forEach(e=>e.hidden=e.dataset.for!==k);
+}
+function renderZones(){
+ if(!zones.length){$("zones").innerHTML='<p class="empty">No areas yet. Add each affected area with the button below.</p>';return}
+ const L=ROADL[kind($("dtype").value)],opts=[["","Select condition"],["clear",L[0]],["slow",L[1]],["blocked",L[2]]];
+ const num=(f,lab,ph,v)=>`<div><label>${lab}</label><input type="number" min="0" data-f="${f}" placeholder="${ph}" value="${v||""}"></div>`;
+ $("zones").innerHTML=zones.map((z,i)=>`<div class="zone" data-i="${i}">
+ <div style="display:flex;gap:6px"><input type="text" aria-label="Area name" data-f="name" placeholder="Area name" value="${esc(z.name)}"><button class="rm" type="button" data-rm="${i}" aria-label="Remove area">Remove</button></div>
+ <div class="two">${num("people","People affected","e.g. 5000",z.people)}${num("damage","Damage (1–5)","1–5",z.damage)}
+ ${num("injured","Injured","0",z.injured)}${num("trapped","Trapped or missing","0",z.trapped)}</div>
+ ${num("vuln","Children, elderly or disabled","0",z.vuln)}
+ <label>Road condition</label>
+ <select data-f="road">${opts.map(o=>`<option value="${o[0]}"${z.road===o[0]?" selected":""}>${o[1]}</option>`).join("")}</select>
+ </div>`).join("");
+}
+$("zones").addEventListener("input",e=>{
+ const box=e.target.closest(".zone");if(!box)return;
+ const z=zones[+box.dataset.i],f=e.target.dataset.f;
+ z[f]=(f==="name"||f==="road")?e.target.value:Math.max(0,+e.target.value||0);
+});
+$("zones").addEventListener("click",e=>{const i=e.target.dataset.rm;if(i===undefined)return;zones.splice(+i,1);renderZones()});
+$("addzone").onclick=()=>{zones.push({name:"",people:0,damage:0,injured:0,trapped:0,vuln:0,road:""});renderZones()};
+function renderShelters(){
+ if(!shelters.length){$("shelters").innerHTML='<p class="empty">No shelters yet. Add the shelters you can use.</p>';return}
+ $("shelters").innerHTML=shelters.map((s,i)=>`<div class="zone" data-i="${i}"><div style="display:flex;gap:6px"><input type="text" aria-label="Shelter name" data-f="name" placeholder="Shelter name" value="${esc(s.name)}"><button class="rm" type="button" data-rm="${i}" aria-label="Remove shelter">Remove</button></div><label>Beds available</label><input type="number" min="0" data-f="beds" placeholder="e.g. 800" value="${s.beds||""}"></div>`).join("");
+}
+$("shelters").addEventListener("input",e=>{
+ const box=e.target.closest(".zone");if(!box)return;
+ const s=shelters[+box.dataset.i],f=e.target.dataset.f;
+ s[f]=f==="name"?e.target.value:Math.max(0,+e.target.value||0);
+});
+$("shelters").addEventListener("click",e=>{const i=e.target.dataset.rm;if(i===undefined)return;shelters.splice(+i,1);renderShelters()});
+$("addshelter").onclick=()=>{shelters.push({name:"",beds:0});renderShelters()};
+$("dtype").addEventListener("input",()=>{renderExtra();renderZones()});
+
+/* ---------- Agents ---------- */
+function extraBonus(inp){
+ const k=kind(inp.type),v=inp.ex1,y=inp.ex2==="yes";
+ if(k==="water")return (v>=2?8:v>=1?4:0)+(y?5:0);
+ if(k==="ground")return (v>=6?8:v>=5?4:0)+(y?4:0);
+ return y?4:0;
+}
+function assess(inp){
+ const tb=(kind(inp.type)==="ground"?6:3)+extraBonus(inp);
+ const rows=inp.zones.map(z=>{
+  const vb=Math.min(10,Math.round(z.vuln/z.people*30));
+  const score=Math.min(100,Math.round(z.damage*14+Math.min(30,z.people/150)+tb+vb+(z.road==="blocked"?6:z.road==="slow"?3:0)+(z.trapped>0?4:0)));
+  return {...z,score,level:score>=75?"Critical":score>=50?"High":"Moderate"};
+ }).sort((a,b)=>b.score-a.score);
+ rows.forEach((r,i)=>r.rank=i+1);
+ const total=rows.reduce((s,r)=>s+r.people,0);
+ const overall=Math.round(rows.reduce((s,r)=>s+r.score*r.people,0)/Math.max(1,total));
+ return {rows,total,overall,level:overall>=75?"Critical":overall>=50?"High":"Moderate",injured:rows.reduce((s,r)=>s+r.injured,0),trapped:rows.reduce((s,r)=>s+r.trapped,0)};
+}
+function allocate(avail,needs,scores){
+ const w=needs.map((n,i)=>n*scores[i]),sw=w.reduce((a,b)=>a+b,0)||1;
+ const out=needs.map((n,i)=>Math.min(n,Math.floor(avail*w[i]/sw)));
+ let left=avail-out.reduce((a,b)=>a+b,0);
+ needs.map((n,i)=>i).sort((a,b)=>scores[b]-scores[a]).forEach(i=>{const add=Math.min(left,needs[i]-out[i]);out[i]+=add;left-=add});
+ return out;
+}
+function resources(inp,A){
+ const k=kind(inp.type),rows=A.rows,c=Math.ceil;
+ const need={
+  amb:rows.map(r=>c(r.people*r.damage/4000)+c(r.injured/20)),
+  rsc:rows.map(r=>c(r.people*r.damage/3000)+c(r.trapped/10)),
+  boat:rows.map(r=>k==="water"?c(r.people*r.damage/2500):0),
+  heavy:rows.map(r=>k==="ground"?c(r.people*r.damage/6000)+(r.trapped>0?1:0):0),
+  heli:rows.map(r=>r.road==="blocked"?c(r.injured/10)+1:0),
+  bus:rows.map(r=>c(r.people*0.4/50)),
+  kits:rows.map(r=>r.injured*2),
+  food:rows.map(r=>r.people*3),
+  water:rows.map(r=>r.people*4)};
+ const sc=rows.map(r=>r.score),al={},short={};
+ for(const key in need){al[key]=allocate(inp.res[key],need[key],sc);short[key]=Math.max(0,need[key].reduce((a,b)=>a+b,0)-inp.res[key])}
+ return {need,al,short,rows};
+}
+function evacuate(inp,A){
+ const k=kind(inp.type),SH=inp.shelters.map(s=>s.name),cap=inp.shelters.map(s=>s.beds);
+ const rows=A.rows.map(r=>{
+  let route,eta;
+  if(r.road==="clear"){route="Use the main road to the shelter";eta=20}
+  else if(r.road==="slow"){route=k==="water"?"Avoid low roads; boat shuttle to a dry point, then bus":"Use an alternate or elevated route; expect delays";eta=45}
+  else{route=k==="water"?"Road submerged; boat or air lift":k==="ground"?"Road collapsed or blocked; clear it with heavy machinery or air lift":"Road blocked; clear it first or use air lift";eta=90}
+  if(r.vuln/r.people>0.25)eta+=15;
+  if(inp.ex2==="yes"&&k==="water")eta=Math.round(eta*1.3);
+  if(inp.ex2==="yes"&&k==="ground")eta+=10;
+  let need=r.people;const assigned=[];
+  cap.forEach((c,i)=>{if(need>0&&c>0){const t=Math.min(c,need);cap[i]-=t;need-=t;assigned.push(`${fmt(t)} to ${SH[i]}`)}});
+  return {name:r.name,level:r.level,route,eta,assigned,unsheltered:need,vulnerable:r.vuln/r.people>0.25};
+ });
+ return {rows,unsheltered:rows.reduce((s,r)=>s+r.unsheltered,0)};
+}
+
+/* ---------- UI ---------- */
+function drawPipe(state){
+ const n=(i,t)=>`<span class="node ${state[i]||""}">${t}</span>`,ar='<span class="arrow">→</span>';
+ $("pipe").innerHTML=n(0,"Input")+ar+n(1,"Coordinator")+ar+n(2,"Assessment")+n(3,"Resource")+n(4,"Evacuation")+ar+n(5,"Coordinator merge")+ar+n(6,"Final plan");
+}
+let AG={},BODY={};
+function agentShell(title,status,body){return `<div class="agent"><h3>${title}<span class="st ${status[0]}">${status[1]}</span></h3>${body||""}</div>`}
+function drawAgents(){
+ const w=["", "Waiting"];AG.a=AG.a||w;AG.r=AG.r||w;AG.e=AG.e||w;
+ $("agents").innerHTML=agentShell("Assessment Agent",AG.a,BODY.a)+agentShell("Resource Agent",AG.r,BODY.r)+agentShell("Evacuation Agent",AG.e,BODY.e);
+}
+const li=h=>`<li>${h}</li>`;
+const LAB={amb:"Ambulances",rsc:"Rescue teams",boat:"Boats",heavy:"Heavy machines",heli:"Helicopters",bus:"Buses",kits:"Medical kits",food:"Food packs",water:"Water (L)"};
+
+async function run(){
+ const btn=$("run"),errs=[];
+ if(!$("dtype").value.trim())errs.push("Enter the disaster type.");
+ if(!$("loc").value.trim())errs.push("Enter the location.");
+ if(!zones.length)errs.push("Add at least one affected area.");
+ zones.forEach((z,i)=>{const n=z.name.trim()||"Area "+(i+1);
+  if(!z.name.trim())errs.push(`Name area ${i+1}.`);
+  if(!(z.people>0))errs.push(`${n}: enter how many people are affected.`);
+  if(!(z.damage>=1&&z.damage<=5))errs.push(`${n}: enter a damage score from 1 to 5.`);
+  if(z.injured+z.trapped>z.people)errs.push(`${n}: injured plus trapped cannot be more than people affected.`);
+  if(z.vuln>z.people)errs.push(`${n}: vulnerable people cannot be more than people affected.`);
+  if(!z.road)errs.push(`${n}: select the road condition.`);});
+ shelters.forEach((s,i)=>{if(!s.name.trim())errs.push(`Name shelter ${i+1}.`);if(!(s.beds>0))errs.push(`${s.name.trim()||"Shelter "+(i+1)}: enter the beds available.`)});
+ if(errs.length){$("final").innerHTML=errs.map(e=>`<div class="warn">${esc(e)}</div>`).join("");return}
+ btn.disabled=true;
+ const g=id=>Math.max(0,+$(id).value||0),res={};
+ ["amb","rsc","boat","heavy","heli","bus","kits","hosp","food","water"].forEach(k=>res[k]=g(k));
+ if(kind($("dtype").value)!=="water")res.boat=0;
+ if(kind($("dtype").value)!=="ground")res.heavy=0;
+ const inp={type:$("dtype").value.trim(),loc:$("loc").value.trim(),ex1:g("ex1"),ex2:$("ex2").value,zones:zones.map(z=>({...z,name:z.name.trim()})),shelters:shelters.map(s=>({name:s.name.trim(),beds:s.beds})),res};
+ AG={a:["w","Working…"],r:["w","Waiting"],e:["w","Waiting"]};BODY={};
+ $("final").innerHTML='<p class="empty">Agents are working…</p>';
+ const st={0:"done",1:"run"};drawPipe(st);drawAgents();
+ await sleep(600);
+ st[1]="done";st[2]=st[3]=st[4]="run";drawPipe(st);
+ AG={a:["w","Working…"],r:["w","Working…"],e:["w","Working…"]};drawAgents();
+ const A=assess(inp),Rr=resources(inp,A),E=evacuate(inp,A);
+ await Promise.all([
+  sleep(900).then(()=>{
+   BODY.a=`<ul>${A.rows.map(r=>li(`<span class="tag ${r.level}">${r.level}</span><b>${esc(r.name)}</b> · score ${r.score}/100<br><span style="color:var(--muted)">Priority ${r.rank} · ${fmt(r.people)} people · ${fmt(r.injured)} injured · ${fmt(r.trapped)} trapped</span>`)).join("")}</ul>`;
+   AG.a=["d","Done"];st[2]="done";drawPipe(st);drawAgents();
+  }),
+  sleep(1300).then(()=>{
+   BODY.r=`<ul>${Rr.rows.map((r,i)=>li(`<b>${esc(r.name)}</b><br><span style="color:var(--muted)">${Object.keys(LAB).filter(k=>Rr.need[k][i]>0).map(k=>`${LAB[k]} ${fmt(Rr.al[k][i])}/${fmt(Rr.need[k][i])}`).join(" · ")}</span>`)).join("")}</ul>`;
+   AG.r=["d","Done"];st[3]="done";drawPipe(st);drawAgents();
+  }),
+  sleep(1100).then(()=>{
+   BODY.e=`<ul>${E.rows.map(r=>li(`<b>${esc(r.name)}</b> · about ${r.eta} min${r.vulnerable?" (slower: many vulnerable people)":""}<br><span style="color:var(--muted)">${esc(r.route)}</span>`)).join("")}</ul>`;
+   AG.e=["d","Done"];st[4]="done";drawPipe(st);drawAgents();
+  })
+ ]);
+ st[5]="run";drawPipe(st);await sleep(700);st[5]="done";st[6]="done";drawPipe(st);
+ renderFinal(inp,A,Rr,E);
+ btn.disabled=false;
+}
+function advisories(inp,A){
+ const k=kind(inp.type),t=inp.type.toLowerCase(),a=[];
+ if(k==="water"){a.push("Switch off power and gas in submerged areas before boats and teams enter.","Issue a boil-water advisory, because floodwater contaminates supplies.","Keep boats away from power lines and fast currents.");
+  if(/cyclone|storm|hurricane|typhoon/.test(t))a.push("Pause boat and helicopter operations while winds are strong, and keep people in solid buildings away from the coast.")}
+ else if(k==="ground"){a.push("Check for gas leaks and unstable structures before anyone enters a building.","Clear blocked roads first so ambulances can reach people.");
+  if(inp.ex2==="yes")a.push("Aftershocks are expected: use open grounds or inspected buildings as shelters and keep teams out of damaged structures.")}
+ else a.push("Confirm the hazard perimeter with local authorities before moving teams in.");
+ if(A.trapped>0)a.push("Put rescue teams on trapped people first, because their chances fall quickly with time.");
+ return a;
+}
+function renderFinal(inp,A,R,E){
+ const warns=[];
+ const names={amb:"ambulances",rsc:"rescue teams",boat:"boats",heavy:"heavy machines",heli:"helicopters",bus:"buses",kits:"medical kits",food:"food packs",water:"litres of water"};
+ for(const k in R.short)if(R.short[k]>0)warns.push(`Short by ${fmt(R.short[k])} ${names[k]}. Request mutual aid from neighbouring districts.`);
+ if(A.injured>inp.res.hosp)warns.push(`${fmt(A.injured)} people are injured but only ${fmt(inp.res.hosp)} hospital beds are free. Set up field hospitals or transfer patients to other districts.`);
+ if(E.unsheltered>0)warns.push(`${fmt(E.unsheltered)} people have no shelter bed. Open more shelters or arrange transfers.`);
+ const cut=E.rows.filter(r=>r.eta>=90).map(r=>r.name);
+ if(cut.length)warns.push(`${cut.join(", ")}: roads are not usable. Start with air or boat lifts.`);
+ const steps=[];
+ steps.push(["Now",`<b>Declare ${A.level.toLowerCase()} ${esc(inp.type.toLowerCase())} response for ${esc(inp.loc)}.</b> ${fmt(A.total)} people affected across ${A.rows.length} areas.`]);
+ const K=[["amb","ambulances"],["rsc","rescue teams"],["boat","boats"],["heavy","heavy machines"],["heli","helicopters"],["kits","medical kits"]];
+ A.rows.forEach((r,i)=>{
+  const kit=K.filter(([k])=>R.need[k][i]>0&&R.al[k][i]>0).map(([k,l])=>`${fmt(R.al[k][i])} ${l}`).join(", ")||"no vehicles or teams available";
+  const bus=R.al.bus[i]?` ${fmt(R.al.bus[i])} buses move people.`:"";
+  steps.push([r.rank<=2?"0–1 hour":"1–6 hours",`<b>${esc(r.name)} (priority ${r.rank}, ${r.level}).</b> Send ${kit}. ${esc(E.rows[i].route)}.${bus} Shelter: ${esc(E.rows[i].assigned.join("; ")||"no beds left")}.${r.vuln?` Move ${fmt(r.vuln)} children, elderly or disabled people first.`:""}`]);
+ });
+ steps.push(["6–24 hours",`<b>Dispatch supplies.</b> ${fmt(R.al.food.reduce((a,b)=>a+b,0))} food packs and ${fmt(R.al.water.reduce((a,b)=>a+b,0))} litres of water go to areas in priority order.`]);
+ steps.push(["Every 30 minutes",`<b>Review and re-run.</b> Update road conditions, injuries and damage scores, then generate the plan again.`]);
+ const adv=advisories(inp,A);
+ $("final").innerHTML=`<div class="stats">
+ <div class="stat"><b>${A.overall}</b><span>Overall severity · ${A.level}</span></div>
+ <div class="stat"><b>${fmt(A.total)}</b><span>People affected</span></div>
+ <div class="stat"><b>${fmt(A.injured)} / ${fmt(A.trapped)}</b><span>Injured / trapped</span></div>
+ <div class="stat"><b>${warns.length}</b><span>Gaps to resolve</span></div></div>
+ <ol class="plan">${steps.map(s=>`<li><div><span class="when">${s[0]}</span>${s[1]}</div></li>`).join("")}</ol>
+ <h3 class="sub">Safety advisories</h3><ul class="adv">${adv.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
+ ${warns.length?'<h3 class="sub">Gaps to resolve</h3>':""}${warns.map(w=>`<div class="warn">${esc(w)}</div>`).join("")}`;
+ $("finalcard").scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+$("run").onclick=run;
+renderExtra();renderZones();renderShelters();drawPipe({});drawAgents();
+</script>
+</body>
+</html>
